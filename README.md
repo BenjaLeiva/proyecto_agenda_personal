@@ -28,7 +28,8 @@ de que quiere que esa sea su contraseña, "y" para si y "N" para no
 2.2 Poblar la Base de Datos (Opcional)Si deseas tener datos de ejemplo en la tabla agenda_task, utiliza los comandos SQL proporcionados anteriormente, asegurándote de usar 
 user_id = 1 (o el ID de tu superusuario) y la función de fecha correcta (NOW() para MySQL)
 
-3. Ejecución del ServidorInicia el servidor de desarrollo local de Django:python manage.py runserver
+3. Ejecución del Servidor
+Inicia el servidor de desarrollo local de Django:python manage.py runserver
 La aplicación estará disponible en tu navegador en http://127.0.0.1:8000/
 
 4. Manual de Uso de la Aplicación
