@@ -1,0 +1,91 @@
+{% extends "agenda/base.html" %}{% block content %}
+<div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+<header class="mb-10 text-center">
+    <h1 class="text-5xl font-extrabold text-gray-900 leading-tight border-b-4 border-yellow-400 pb-3">
+        ✏️ Editar Tarea: <span class="text-yellow-600">{{ task.title }}</span>
+    </h1>
+    <p class="mt-3 text-xl text-gray-600">
+        Realiza las modificaciones necesarias
+    </p>
+</header>
+
+<div class="bg-white rounded-2xl shadow-2xl p-6 md:p-10 border-t-8 border-blue-500">
+    <form method="POST" action="{% url 'agenda:edit_task' task.id %}" class="space-y-8">
+        {% csrf_token %}
+        <div class="space-y-6 border-b pb-6">
+            <h2 class="text-2xl font-semibold text-gray-700">Detalles Esenciales</h2>
+            <p class="text-sm text-gray-500">El título es la clave de tu tarea. La descripción añade el contexto necesario.</p>
+            <div>
+                <label for="{{ form.title.id_for_label }}" class="block text-lg font-medium text-gray-800 mb-1">
+                    {{ form.title.label }} <span class="text-red-500">*</span>
+                </label>
+                <input type="text" name="{{ form.title.name }}" id="{{ form.title.id_for_label }}" 
+                       value="{{ task.title }}" maxlength="255" required 
+                       class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-lg 
+                              focus:ring-blue-500 focus:border-blue-500 text-lg shadow-inner">
+                {% if form.title.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.title.errors|striptags }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.description.id_for_label }}" class="block text-lg font-medium text-gray-800 mb-1">
+                    {{ form.description.label }}
+                </label>
+                <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" 
+                          rows="4"
+                          class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-lg 
+                                 focus:ring-blue-500 focus:border-blue-500 text-lg shadow-inner">
+                    {{ task.description|default:"" }}
+                </textarea>
+                <p class="text-xs text-gray-500 mt-1">
+                    Detalles opcionales sobre la tarea, notas o pasos a seguir.
+                </p>
+            </div>
+        </div>
+        <div class="space-y-6">
+            <h2 class="text-2xl font-semibold text-gray-700">Gestión de Tiempo</h2>
+            <p class="text-sm text-gray-500">Define cuándo debe estar completada esta tarea. Si está vacía, se considera sin límite.</p>
+            <div class="max-w-sm">
+                <label for="{{ form.due_date.id_for_label }}" class="block text-lg font-medium text-gray-800 mb-1">
+                    {{ form.due_date.label }}
+                </label>
+                <input type="date" name="{{ form.due_date.name }}" id="{{ form.due_date.id_for_label }}"
+                       value="{{ task.due_date|date:'Y-m-d'|default:'' }}"
+                       class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-lg 
+                              focus:ring-blue-500 focus:border-blue-500 text-lg shadow-inner">
+            </div>
+
+            <div class="p-4 rounded-lg 
+                {% if task.is_completed %}bg-green-100 border-l-4 border-green-500{% else %}bg-red-100 border-l-4 border-red-500{% endif %}">
+                <p class="font-medium text-gray-700">Estado Actual:</p>
+                <span class="font-bold 
+                    {% if task.is_completed %}text-green-700{% else %}text-red-700{% endif %}">
+                    {% if task.is_completed %}Completada ✅{% else %}Pendiente 🕒{% endif %}
+                </span>
+                <p class="text-sm text-gray-600 mt-1">
+                    Si deseas cambiar el estado (Completada/Pendiente), puedes hacerlo directamente desde la lista principal de tareas.
+                </p>
+            </div>
+            {{ form.is_completed }}
+        </div>
+        
+        <div class="flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4 pt-6 border-t">
+            <a href="{% url 'agenda:task_list' %}" class="w-full sm:w-auto px-8 py-3 text-center 
+               border border-gray-300 rounded-lg shadow-sm 
+               font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 
+               transition duration-150 transform hover:scale-[1.01]">
+                Cancelar y Volver
+            </a>
+            <button type="submit" class="w-full sm:w-auto px-8 py-3 
+                    bg-yellow-500 text-white font-bold rounded-lg 
+                    shadow-md hover:bg-yellow-600 transition duration-150 
+                    transform hover:scale-[1.01] focus:ring-4 focus:ring-yellow-300">
+                💾 Aplicar Cambios
+            </button>
+        </div>
+    </form>
+</div>
+</div>{% endblock content %}

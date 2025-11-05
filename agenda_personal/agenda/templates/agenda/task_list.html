@@ -1,0 +1,164 @@
+{% extends "agenda/base.html" %}
+{% load static %}
+{% block content %}
+
+<h2 class="text-4xl font-extrabold mb-8 text-gray-800 text-center">Organiza tus actividades</h2>
+<div class="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-2xl mb-12 border-t-4 border-blue-600">
+    <h3 class="text-2xl font-semibold mb-4 text-gray-700">Añadir Actividad</h3>
+    <form method="post" action="{% url 'agenda:task_list' %}" class="space-y-4">
+        {% csrf_token %}
+        <div>
+            <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                {{ form.title.label }}
+            </label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <p class="text-red-500 text-xs italic mt-1">¡El título es obligatorio!</p>
+            {% endif %}
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                    {{ form.description.label }}
+                </label>
+                {{ form.description }}
+            </div>
+            <div>
+                <label for="{{ form.due_date.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                    {{ form.due_date.label }}
+                </label>
+                {{ form.due_date }}
+            </div>
+        </div>
+        
+        <button type="submit" class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition duration-150 shadow-md transform hover:scale-[1.01]">
+            Guardar Tarea
+        </button>
+    </form>
+</div>
+
+<h3 class="text-3xl font-semibold mb-6 text-gray-800 border-b pb-2">
+    Tareas Pendientes y Completadas (Página {{ tasks.number }} de {{ tasks.paginator.num_pages }})
+</h3>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {% for task in tasks %}
+    <div class="task-card p-5 rounded-xl shadow-lg transition duration-300 transform
+        {% if task.is_completed %}
+            bg-green-50 border-l-4 border-green-500 opacity-80
+        {% else %}
+            bg-white border-l-4 border-blue-500 hover:scale-[1.01] hover:shadow-2xl
+        {% endif %}
+    ">
+        <div class="flex justify-between items-start mb-3">
+            <h4 class="text-xl font-bold {% if task.is_completed %}line-through text-gray-500{% else %}text-gray-900{% endif %}">
+                {{ task.title }}
+            </h4>
+        </div>
+
+        <p class="text-gray-600 text-sm mb-4 min-h-[40px]">{{ task.description|default:"(Sin detalles)" }}</p>
+
+        {% if task.due_date %}
+            <p class="text-xs font-medium mb-4
+                {% if task.is_completed %}
+                    text-green-700
+                {% elif task.due_date|date:"Ymd" < "now"|date:"Ymd" %}
+                    text-red-600 font-bold
+                {% else %}
+                    text-gray-500
+                {% endif %}
+            ">
+                Fecha Límite:
+                <span class="font-semibold">{{ task.due_date|date:"j F Y" }}</span>
+            </p>
+        {% else %}
+            <p class="text-xs font-medium mb-4 text-gray-400">Sin fecha límite</p>
+        {% endif %}
+
+        <div class="flex space-x-2 mt-4">
+            <a href="{% url 'agenda:edit_task' task.id %}" 
+               class="flex-grow py-2 rounded-lg text-center text-sm font-semibold 
+                      bg-yellow-500 text-white hover:bg-yellow-600 
+                      transition duration-150 ease-in-out">
+                Editar 📝
+            </a>
+
+            <form method="POST" action="{% url 'agenda:toggle_complete' task.id %}" class="flex-grow">
+                {% csrf_token %}
+                <button type="submit" class="w-full py-2 rounded-lg text-sm font-semibold transition duration-150 ease-in-out
+                    {% if task.is_completed %}
+                        bg-orange-500 text-white hover:bg-orange-600
+                    {% else %}
+                        bg-green-500 text-white hover:bg-green-600
+                    {% endif %}
+                ">
+                    {% if task.is_completed %}Pendiente ↩️{% else %}Completada ✅{% endif %}
+                </button>
+            </form>
+
+            <form method="POST" action="{% url 'agenda:delete_task' task.id %}"
+                onsubmit="return confirm('¿Estás seguro de que quieres eliminar la tarea: «{{ task.title }}»?');">
+                {% csrf_token %}
+                <button type="submit" class="py-2 px-3 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition duration-150 ease-in-out" title="Eliminar Tarea">
+                    🗑️
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% empty %}
+        <div class="md:col-span-4 text-center p-8 bg-yellow-100 rounded-xl shadow-inner border border-yellow-200">
+            <p class="text-xl text-gray-700">¡No tienes tareas en tu agenda!</p>
+            <p class="text-md text-gray-500 mt-2">Usa el formulario de arriba para agregar tu primera tarea.</p>
+        </div>
+    {% endfor %}
+</div>
+
+{% if tasks.has_other_pages %}
+<div class="flex justify-center mt-8 space-x-2">
+    
+    {# Botón 'Anterior' #}
+    {% if tasks.has_previous %}
+        <a href="?page={{ tasks.previous_page_number }}" 
+           class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg 
+                  hover:bg-gray-100 transition duration-150 shadow-sm">
+            &laquo; Anterior
+        </a>
+    {% else %}
+        <span class="px-4 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-lg">
+            &laquo; Anterior
+        </span>
+    {% endif %}
+
+    {# Números de página #}
+    {% for i in tasks.paginator.page_range %}
+        {% if tasks.number == i %}
+            <span class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg shadow-md">
+                {{ i }}
+            </span>
+        {% else %}
+            <a href="?page={{ i }}" 
+               class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg 
+                      hover:bg-blue-100 transition duration-150">
+                {{ i }}
+            </a>
+        {% endif %}
+    {% endfor %}
+
+    {# Botón 'Siguiente' #}
+    {% if tasks.has_next %}
+        <a href="?page={{ tasks.next_page_number }}" 
+           class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg 
+                  hover:bg-gray-100 transition duration-150 shadow-sm">
+            Siguiente &raquo;
+        </a>
+    {% else %}
+        <span class="px-4 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-lg">
+            Siguiente &raquo;
+        </span>
+    {% endif %}
+
+</div>
+{% endif %}
+{% endblock content %}

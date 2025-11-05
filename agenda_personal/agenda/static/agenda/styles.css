@@ -1,0 +1,15 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.task-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.task-card:hover:not(.opacity-75) {
+    transform: translateY(-5px);
+}
+
+header a {
+    text-decoration: none;
+}
